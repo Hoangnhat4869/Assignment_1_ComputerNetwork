@@ -38,13 +38,13 @@ class Server:
             
             client_socket, client_address = self.server.accept()
             client_name = client_socket.recv(SIZE).decode(FORMAT)
-            print(f'Client {client_address} (' +  client_name + ') connected.')
+            print(f'\nClient {client_address} (' +  client_name + ') connected.')
             self.connectedClient[client_name] = client_address
             client_socket.send('_'.encode(FORMAT))
             self.onlineClient[client_name] = client_address
 
             threading.Thread(target=self.handle_client, args=(client_socket, client_address, client_name)).start()
-            time.sleep(0.2)
+            time.sleep(1)
             
 
     def start_request(self):
@@ -53,8 +53,8 @@ class Server:
 
 
     def server_option(self):
-        print('Enter your command:\n> discover `hostname`: discover the list of local files of hostname\n> ping `hostname`: live check hostname')
-        option = input('Your command: ')
+        print('\nEnter your command:\n> discover `hostname`: discover the list of local files of hostname\n> ping `hostname`: live check hostname')
+        option = input('\nYour command: ')
         if option.startswith('discover'):
             print(self.discover(option.split(' ')[1]))
         elif option.startswith('ping'):
@@ -73,7 +73,7 @@ class Server:
             client_command, client_message = client_request.split('@')         # Client request in format `cmd@msg`
             
             if client_command != 'DISCONNECT':
-                print(f"[{client_address}]Client's request: [{client_command}]", client_message)
+                print(f"\n[{client_address}]Client's request: [{client_command}]", client_message)
 
             if client_command == 'PUBLISH':
                 fileName = client_message.split(' ')
