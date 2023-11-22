@@ -214,7 +214,7 @@ class Client:
             except:
                 print('Waiting for request...')
 
-            request = other_socket.recv(SIZE).decode(FORMAT)
+            #request = other_socket.recv(SIZE).decode(FORMAT)
             fileName = request.split('@')[1]
             self.transfer_file(other_socket, other_address[0], fileName)
         except:

@@ -4,4 +4,4 @@ from client import *
 
 class GUI:
     def setupUI(self):
-        self.
+        self.button = ctk.CTkButton
