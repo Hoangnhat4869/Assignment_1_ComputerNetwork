@@ -5,8 +5,8 @@ import shutil
 import time
 
 # Enter the server's IP
-SERVER_IP = input("Enter Server's IP: ")
-SERVER_PORT = 4869
+# SERVER_IP = input("Enter Server's IP: ")
+# SERVER_PORT = 4869
 
 SIZE = 1024
 REPOSITORY_PATH = 'repository/'
@@ -33,8 +33,10 @@ class Client:
         self.server_IP = IP
         self.server_Port = port
         self.hostname = hostname
+        self.isConnected = False
 
         self.peer_socket = None
+
 
     ##### START CONNECT TO SERVER #####
     def start(self):
@@ -49,21 +51,24 @@ class Client:
         except:
             print(f"Failed to connect to server: {self.server_IP}:{self.server_Port}")
             return
+        self.isConnected = True
         self.client_socket.send(self.hostname.encode(FORMAT))
         _ = self.client_socket.recv(SIZE).decode(FORMAT)
         print(f"Connected to server: {self.server_IP}:{self.server_Port}")
         self.publish_all()
-
-        threading.Thread(target=self.start_request).start()
-        time.sleep(0.1)
+        self.request_thread = threading.Thread(target=self.start_request)
+        self.request_thread.start()
+        time.sleep(0.2)
 
         # Listen to other peers
         self.client_server = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
         self.client_server.setsockopt(sk.SOL_SOCKET, sk.SO_REUSEADDR, 1)
         self.client_server.bind((get_local_ip(), 6969))
         self.client_server.listen()
+        
+        self.listen_thread = threading.Thread(target=self.listening)
+        self.listen_thread.start()
 
-        threading.Thread(target=self.sending_to_peers).start()
 
 
     def getfile_from_target_peer(self, target_IP = '127.0.0.1', target_Port = 6969, fileName = ''):
@@ -95,7 +100,7 @@ class Client:
 
     ##### Start send request #####
     def start_request(self):
-        while True:
+        while self.isConnected:
             self.choosing_option()
 
 
@@ -114,6 +119,8 @@ class Client:
             self.fetch(fname)
         elif option == 'quit':
             self.disconnect(self.client_socket, self.server_IP, self.server_Port)
+            self.isConnected = False
+            self.client_server.close()
             exit(0)
         else:
             print('Invalid Command')
@@ -181,8 +188,11 @@ class Client:
                         clientList.append(clients)
                     self.client_socket.send('Received'.encode(FORMAT))
                 print(server_message, clientList)
-                target_IP = clientList[0].split(':')[0]
-                self.getfile_from_target_peer(target_IP, 6969, fname)
+                if (clientList):
+                    target_IP = clientList[0].split(':')[0]
+                    self.getfile_from_target_peer(target_IP, 6969, fname)
+                else:
+                    print('File not found on the server')
             else:
                 print(server_message)
         else:
@@ -190,18 +200,27 @@ class Client:
             print(msg.split('@')[1])
 
 
-    def sending_to_peers(self):
-        other_socket, other_address = self.client_server.accept()
-        print(f"Peer {other_address} connected.")
-        
-        try:
-            request = other_socket.recv(SIZE).decode(FORMAT)
-        except:
-            print('Waiting for request...')
+    def listening(self):
+        while self.isConnected:
+            self.sending_to_peers()
 
-        request = other_socket.recv(SIZE).decode(FORMAT)
-        fileName = request.split('@')[1]
-        self.transfer_file(other_socket, other_address[0], fileName)
+
+    def sending_to_peers(self):
+        try:
+            other_socket, other_address = self.client_server.accept()
+            print(f"Peer {other_address} connected.")
+            try:
+                request = other_socket.recv(SIZE).decode(FORMAT)
+            except:
+                print('Waiting for request...')
+
+            request = other_socket.recv(SIZE).decode(FORMAT)
+            fileName = request.split('@')[1]
+            self.transfer_file(other_socket, other_address[0], fileName)
+        except:
+            if not self.isConnected:
+                print('CLOSE')
+                exit(0)  
 
         
     def transfer_file(self, receiver = sk.socket, receiver_IP = '127.0.0.1', fileName = ''):
@@ -217,13 +236,3 @@ class Client:
             _ = receiver.recv(SIZE).decode(FORMAT)
         file.close()
         print('Sent ' + fileName + f'to peer: {receiver_IP}')
-        
-
-def main():
-    hostname = input('Enter your name: ')
-    client = Client(SERVER_IP, SERVER_PORT, hostname)
-    client.start()
-    
-
-if __name__ == '__main__':
-    main()

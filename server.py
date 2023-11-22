@@ -38,7 +38,7 @@ class Server:
             
             client_socket, client_address = self.server.accept()
             client_name = client_socket.recv(SIZE).decode(FORMAT)
-            print(f'\nClient {client_address} (' +  client_name + ') connected.')
+            print('\nClient ' + client_name + f' (IP Address: {client_address}) connected.')
             self.connectedClient[client_name] = client_address
             client_socket.send('_'.encode(FORMAT))
             self.onlineClient[client_name] = client_address
@@ -93,12 +93,12 @@ class Server:
                 
                 self.send_message(client_socket, cmd, msg)
                 print(msg)
-            
+                
             elif client_command == 'FETCH':
                 fileName = client_message
                 curClientList = list()
                 for cli in self.clientFileList:
-                    if fileName in self.clientFileList[cli] and cli in self.onlineClient:
+                    if fileName in self.clientFileList[cli] and cli in self.onlineClient.values():
                         curClientList.append(cli)
                 if curClientList is not None:
                     self.send_message(client_socket, 'OK', 'These are clients having the file:')
