@@ -188,8 +188,8 @@ class Client:
                     else:
                         clientList.append(clients)
                     self.client_socket.send('Received'.encode(FORMAT))
-                print(server_message, clientList)
                 if (clientList):
+                    print(server_message, clientList)
                     target_IP = clientList[0].split(':')[0]
                     self.getfile_from_target_peer(target_IP, 6969, fname)
                 else:

@@ -100,7 +100,7 @@ class Server:
                 for cli in self.clientFileList:
                     if fileName in self.clientFileList[cli] and cli in self.onlineClient.values():
                         curClientList.append(cli)
-                if curClientList is not None:
+                if curClientList:
                     self.send_message(client_socket, 'OK', 'These are clients having the file:')
                     for client in curClientList:
                         client = client[0] + ':' + str(client[1])
