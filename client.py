@@ -83,7 +83,7 @@ class Client:
         self.peer_socket.send(request.encode(FORMAT))
 
 
-        data = self.peer_socket.recv(SIZE)
+        #data = self.peer_socket.recv(SIZE)
         
         filePath = os.path.join(os.getcwd(), REPOSITORY_PATH)
         filePath += fileName
@@ -96,6 +96,7 @@ class Client:
             self.peer_socket.send('OK'.encode(FORMAT))
         file.close()
         print('Received ' + fileName + f' from {target_IP}')
+        self.peer_socket.close()
 
 
     ##### Start send request #####
@@ -235,4 +236,5 @@ class Client:
             receiver.send(data)
             _ = receiver.recv(SIZE).decode(FORMAT)
         file.close()
-        print('Sent ' + fileName + f'to peer: {receiver_IP}')
+        print('Sent ' + fileName + f' to peer: {receiver_IP}')
+        receiver.close()
