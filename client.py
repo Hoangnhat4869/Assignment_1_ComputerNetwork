@@ -238,3 +238,13 @@ class Client:
         file.close()
         print('Sent ' + fileName + f' to peer: {receiver_IP}')
         receiver.close()
+
+def main():
+    SERVER_IP = input("Enter server's IP: ")
+    SERVER_PORT = 4869
+    hostname = input("Enter your name: ")
+    client = Client(SERVER_IP, SERVER_PORT, hostname)
+    client.start()
+
+if __name__ == "__main__":
+    main()
