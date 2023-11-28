@@ -171,6 +171,7 @@ class ClientUI:
             self.WarningLabel = ctk.CTkLabel(self.LoginFrame, text='Please enter both Server IP and Hostname.',
                                               text_color='red', font=self.tinyFont)
             self.WarningLabel.place(relx=0.5, rely=0.75, anchor=ctk.CENTER)
+            self.WarningLabel.after(2000, lambda: self.WarningLabel.place_forget())
             return
         
         if not validate_ip_address(SERVER_IP):
@@ -178,6 +179,7 @@ class ClientUI:
             self.WarningLabel = ctk.CTkLabel(self.LoginFrame, text='Server IP is not valid.',
                                               text_color='red', font=self.tinyFont)
             self.WarningLabel.place(relx=0.5, rely=0.75, anchor=ctk.CENTER)
+            self.WarningLabel.after(2000, lambda: self.WarningLabel.place_forget())
             return
 
         self.client = Client(SERVER_IP, SERVER_PORT, hostname)
