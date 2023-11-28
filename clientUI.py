@@ -202,7 +202,7 @@ class ClientUI:
         else:
             MessageLabel = ctk.CTkLabel(self.MainFrame, text=msg, text_color='red', font=self.tinyFont)
         MessageLabel.place(relx=0.14, rely=0.78, anchor=ctk.CENTER)
-        MessageLabel.after(3000, lambda:MessageLabel.place_forget())
+        MessageLabel.after(2000, lambda:MessageLabel.place_forget())
         
         # Update Repository after uploading
         self.update_RepoList()
@@ -245,7 +245,7 @@ class ClientUI:
             #self.client.allFile.remove(self.RepoList.curselection())
         
         MessageLabel.place(relx=0.5, rely=0.98, anchor=ctk.CENTER)
-        MessageLabel.after(3000, lambda:MessageLabel.place_forget())
+        MessageLabel.after(2000, lambda:MessageLabel.place_forget())
         fName = None
 
 
@@ -263,7 +263,7 @@ class ClientUI:
                 MessageLabel = ctk.CTkLabel(self.ServerFileFrame, text=msg, text_color='red', font=self.tinyFont)
                 
         MessageLabel.place(relx=0.5, rely=0.98, anchor=ctk.CENTER)
-        MessageLabel.after(3000, lambda:MessageLabel.place_forget())
+        MessageLabel.after(2000, lambda:MessageLabel.place_forget())
 
 
     def disconnect(self):
