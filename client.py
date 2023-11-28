@@ -37,6 +37,7 @@ class Client:
 
         self.peer_socket = None
 
+        self.allFile = list()
 
     ##### START CONNECT TO SERVER #####
     def start(self):
@@ -50,12 +51,13 @@ class Client:
             self.client_socket.connect((self.server_IP, self.server_Port))
         except:
             print(f"Failed to connect to server: {self.server_IP}:{self.server_Port}")
-            return
+            return False
         self.isConnected = True
         self.client_socket.send(self.hostname.encode(FORMAT))
         _ = self.client_socket.recv(SIZE).decode(FORMAT)
         print(f"Connected to server: {self.server_IP}:{self.server_Port}")
         self.publish_all()
+        self.GetAllFile()
         self.request_thread = threading.Thread(target=self.start_request)
         self.request_thread.start()
         time.sleep(0.2)
@@ -96,6 +98,7 @@ class Client:
             self.peer_socket.send('OK'.encode(FORMAT))
         file.close()
         print('Received ' + fileName + f' from {target_IP}')
+        self.targetIP = target_IP
         self.peer_socket.close()
 
 
@@ -118,6 +121,11 @@ class Client:
         elif option.startswith('fetch'):
             fname = option.split(' ')[1]
             self.fetch(fname)
+        elif option.startswith('delete'):
+            fname = option.split(' ')[1]
+            self.deleteFile(fname)
+        elif option.startswith('getall'):
+            self.GetAllFile()
         elif option == 'quit':
             self.disconnect(self.client_socket, self.server_IP, self.server_Port)
             self.isConnected = False
@@ -144,7 +152,7 @@ class Client:
         fileList = ''
         
         for file in os.listdir(filePath):
-            fileList += file + ' '
+            fileList += file + ':'
         
         if fileList != '':
             msg = 'PUBLISH@' + fileList
@@ -159,6 +167,7 @@ class Client:
         filePath = os.path.join(lname, fname)
         if not os.path.exists(filePath):
             print('This file does not exist on your system.')
+            return('ERROR', 'Please select a file to upload')
         else:
             shutil.copy(filePath, os.path.join(os.getcwd(), REPOSITORY_PATH))
 
@@ -166,8 +175,9 @@ class Client:
         self.client_socket.send(msg.encode(FORMAT))
         
         server_respond = self.client_socket.recv(SIZE).decode(FORMAT)
-        _, server_message = server_respond.split('@')
+        server_command, server_message = server_respond.split('@')
         print(server_message)
+        return server_command, server_message
 
 
     def fetch(self, fname = ''):
@@ -199,6 +209,15 @@ class Client:
         else:
             msg = 'ERROR@File existed in repository.'
             print(msg.split('@')[1])
+
+
+    def deleteFile(self, fname):
+        filePath = os.path.join(REPOSITORY_PATH, fname)
+        os.remove(filePath)
+        msg = 'DELETE@' + fname
+        self.client_socket.send(msg.encode(FORMAT))
+        _, server_msg = self.client_socket.recv(SIZE).decode(FORMAT).split('@')
+        print(server_msg)
 
 
     def listening(self):
@@ -238,6 +257,24 @@ class Client:
         file.close()
         print('Sent ' + fileName + f' to peer: {receiver_IP}')
         receiver.close()
+
+
+    def GetAllFile(self):
+        self.client_socket.send('GETALL@Get'.encode(FORMAT))
+        
+        while True:
+            file = self.client_socket.recv(SIZE).decode(FORMAT)
+            if not file or file.startswith('DONE?'):
+                break
+            if file not in self.allFile:
+                self.allFile.append(file)
+            self.client_socket.send('_'.encode(FORMAT))
+
+        msg = 'Received all files from server.'
+        print(msg)
+        return msg
+
+
 
 def main():
     SERVER_IP = input("Enter server's IP: ")

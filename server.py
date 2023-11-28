@@ -76,7 +76,7 @@ class Server:
                 print(f"\n[{client_address}]Client's request: [{client_command}]", client_message)
 
             if client_command == 'PUBLISH':
-                fileName = client_message.split(' ')
+                fileName = client_message.split(':')
                 if client_address in self.clientFileList:
                     fileName = fileName[0]
                     if (fileName not in self.clientFileList[client_address]):
@@ -117,6 +117,25 @@ class Server:
             elif client_command == 'ERROR':
                 print(client_message)
 
+            elif client_command == 'DELETE':
+                fileName = client_message
+                self.clientFileList[client_address].remove(fileName)
+                self.send_message(client_socket, 'OK', 'Deleted successfully!')
+                print('Deleted successfully!')
+
+            elif client_command == 'GETALL':
+                allFile = list()
+                for cli in self.clientFileList:
+                    for fileName in self.clientFileList[cli]:
+                        if fileName not in allFile:
+                            allFile.append(fileName)
+                
+                for file in allFile:
+                    client_socket.send(file.encode(FORMAT))
+                    _ = client_socket.recv(SIZE).decode(FORMAT)
+                self.send_message(client_socket, 'DONE?', 'All files are sent.')
+                print(f'All files are sent to [{client_address}]')
+
             else:
                 print(f'Client {client_address} disconnected.')
                 self.onlineClient.pop(client_name)
@@ -132,9 +151,9 @@ class Server:
             return 'This host have not connected to server yet.'
         else:
             if hostname in self.onlineClient:
-                output = 'Online'
+                output = 'ONLINE'
             else:
-                output = 'Offline'
+                output = 'OFFLINE'
             return output
 
     def discover(self, hostname = ''):
