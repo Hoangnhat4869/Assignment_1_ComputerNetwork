@@ -100,7 +100,8 @@ class ServerUI:
             MessageLabel.after(2000, lambda: MessageLabel.place_forget())
         else:
             hostname = client.split('\t')[-1]
-            repoLabel = ctk.CTkLabel(self.MainFrame, text=hostname + "'s Repository", text_color='#991f00', font=self.smallFont)
+            repoLabel = ctk.CTkLabel(self.MainFrame, text=hostname + "'s Repository", text_color='#991f00',
+                                      font=self.smallFont, fg_color='#527a7a')
             repoLabel.place(relx=0.77, rely=0.5, anchor=ctk.CENTER)
             listFile = self.server.discover(hostname)
             if self.RepoList.size():
