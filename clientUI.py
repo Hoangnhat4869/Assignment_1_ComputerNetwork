@@ -199,7 +199,6 @@ class ClientUI:
         cmd, msg = self.client.publish(lname, fname)
         if cmd == 'OK':
             MessageLabel = ctk.CTkLabel(self.MainFrame, text=msg, text_color='green', font=self.tinyFont)
-            self.client.allFile.append(fname)
         else:
             MessageLabel = ctk.CTkLabel(self.MainFrame, text=msg, text_color='red', font=self.tinyFont)
         MessageLabel.place(relx=0.14, rely=0.78, anchor=ctk.CENTER)
@@ -239,14 +238,15 @@ class ClientUI:
             msg = 'Please select a file to delete!'
             MessageLabel = ctk.CTkLabel(self.RepoFrame, text=msg, text_color='red', font=self.tinyFont)
         else:
-            self.client.deleteFile(self.RepoList.get())
-            self.RepoList.delete(self.RepoList.curselection())
-            self.client.allFile.remove(self.RepoList.curselection())
             msg = fName + ' deleted successfully!'
             MessageLabel = ctk.CTkLabel(self.RepoFrame, text=msg, text_color='green', font=self.tinyFont)
+            self.client.deleteFile(self.RepoList.get())
+            self.RepoList.delete(self.RepoList.curselection())
+            #self.client.allFile.remove(self.RepoList.curselection())
         
         MessageLabel.place(relx=0.5, rely=0.98, anchor=ctk.CENTER)
         MessageLabel.after(3000, lambda:MessageLabel.place_forget())
+        fName = None
 
 
     def fetch_file(self):
@@ -255,13 +255,15 @@ class ClientUI:
             msg = 'Please select a file to fetch!'
             MessageLabel = ctk.CTkLabel(self.ServerFileFrame, text=msg, text_color='red', font=self.tinyFont)
         else:
-            self.client.fetch(self.ServerFileList.get())
-            self.RepoList.insert('END', self.ServerFileList.get())
-            msg = 'Fetch ' + fName + f' successfully!'
-            MessageLabel = ctk.CTkLabel(self.RepoFrame, text=msg, text_color='green', font=self.tinyFont)
-        
+            msg = self.client.fetch(self.ServerFileList.get())
+            if msg.startswith('Received'):
+                self.RepoList.insert('END', self.ServerFileList.get())
+                MessageLabel = ctk.CTkLabel(self.ServerFileFrame, text=msg, text_color='green', font=self.tinyFont)
+            else:
+                MessageLabel = ctk.CTkLabel(self.ServerFileFrame, text=msg, text_color='red', font=self.tinyFont)
+                
         MessageLabel.place(relx=0.5, rely=0.98, anchor=ctk.CENTER)
-        MessageLabel.after(3000, lambda:self.MessageLabel.place_forget())
+        MessageLabel.after(3000, lambda:MessageLabel.place_forget())
 
 
     def disconnect(self):

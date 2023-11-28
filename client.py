@@ -97,9 +97,11 @@ class Client:
             file.write(data)
             self.peer_socket.send('OK'.encode(FORMAT))
         file.close()
-        print('Received ' + fileName + f' from {target_IP}')
+        msg = 'Received ' + fileName + f' from {target_IP}'
         self.targetIP = target_IP
+        print(msg)
         self.peer_socket.close()
+        return msg
 
 
     ##### Start send request #####
@@ -176,6 +178,8 @@ class Client:
         
         server_respond = self.client_socket.recv(SIZE).decode(FORMAT)
         server_command, server_message = server_respond.split('@')
+        if fname not in self.allFile:
+            self.allFile.append(fname)
         print(server_message)
         return server_command, server_message
 
@@ -201,14 +205,21 @@ class Client:
                 if (clientList):
                     print(server_message, clientList)
                     target_IP = clientList[0].split(':')[0]
-                    self.getfile_from_target_peer(target_IP, 6969, fname)
+                    msg = self.getfile_from_target_peer(target_IP, 6969, fname)
+                    if fname not in self.allFile:
+                        self.allFile.append(fname)
+                    return msg
                 else:
-                    print('File not found on the server')
+                    msg = 'File not found on the server'
+                    print(msg)
+                    return msg
             else:
                 print(server_message)
+                return server_message
         else:
-            msg = 'ERROR@File existed in repository.'
-            print(msg.split('@')[1])
+            msg = 'File existed in repository.'
+            print(msg)
+            return msg
 
 
     def deleteFile(self, fname):
@@ -217,6 +228,7 @@ class Client:
         msg = 'DELETE@' + fname
         self.client_socket.send(msg.encode(FORMAT))
         _, server_msg = self.client_socket.recv(SIZE).decode(FORMAT).split('@')
+        self.allFile.remove(fname)
         print(server_msg)
 
 
