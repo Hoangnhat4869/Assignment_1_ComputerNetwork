@@ -75,21 +75,31 @@ class Server:
             if client_command != 'DISCONNECT':
                 print(f"\n[{client_address}]Client's request: [{client_command}]", client_message)
 
-            if client_command == 'PUBLISH':
+            if client_command == 'PUBLISHALL':
                 fileName = client_message.split(':')
+                fileName = fileName[:-1]
                 if client_address in self.clientFileList:
-                    fileName = fileName[0]
-                    if (fileName not in self.clientFileList[client_address]):
-                        self.clientFileList[client_address].append(fileName)
-                        cmd = 'OK'
-                        msg = 'Uploaded successfully!'
-                    else:
-                        cmd = 'ERROR'
-                        msg = 'FileName existed in repository'
+                    self.clientFileList[client_address] = []
+                    for file in fileName:
+                        self.clientFileList[client_address].append(file)
                 else:
-                    self.clientFileList[client_address] = fileName[:-1]
-                    cmd = 'OK'
-                    msg = 'Uploaded successfully!'
+                    self.clientFileList[client_address] = fileName
+                
+                cmd = 'OK'
+                msg = 'Uploaded successfully!'
+                
+                self.send_message(client_socket, cmd, msg)
+                print(msg)
+
+            elif client_command == 'PUBLISH':
+                fileName = client_message
+                if client_address in self.clientFileList:
+                    self.clientFileList[client_address].append(fileName)
+                else:
+                    self.clientFileList[client_address] = [fileName]
+                
+                cmd = 'OK'
+                msg = 'Uploaded successfully!'
                 
                 self.send_message(client_socket, cmd, msg)
                 print(msg)

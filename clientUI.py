@@ -283,6 +283,7 @@ class ClientUI:
 
 
     def update_ServerFileList(self):
+        self.client.publish_all()
         self.client.GetAllFile()
         if self.ServerFileList.size():
             self.ServerFileList.delete(0,'END')

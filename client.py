@@ -157,7 +157,7 @@ class Client:
             fileList += file + ':'
         
         if fileList != '':
-            msg = 'PUBLISH@' + fileList
+            msg = 'PUBLISHALL@' + fileList
             self.client_socket.send(msg.encode(FORMAT))
             server_respond = self.client_socket.recv(SIZE).decode(FORMAT)
             _ = server_respond.split('@')
@@ -168,20 +168,23 @@ class Client:
         
         filePath = os.path.join(lname, fname)
         if not os.path.exists(filePath):
-            print('This file does not exist on your system.')
+            # print('This file does not exist on your system.')
             return('ERROR', 'Please select a file to upload')
         else:
-            shutil.copy(filePath, os.path.join(os.getcwd(), REPOSITORY_PATH))
+            if fname in os.listdir(os.path.join(os.getcwd(), REPOSITORY_PATH)):
+                return('ERROR', 'File name existed in your repository.')
+            else:
+                shutil.copy(filePath, os.path.join(os.getcwd(), REPOSITORY_PATH))
 
-        msg = 'PUBLISH@' + fname
-        self.client_socket.send(msg.encode(FORMAT))
-        
-        server_respond = self.client_socket.recv(SIZE).decode(FORMAT)
-        server_command, server_message = server_respond.split('@')
-        if fname not in self.allFile:
-            self.allFile.append(fname)
-        print(server_message)
-        return server_command, server_message
+                msg = 'PUBLISH@' + fname
+                self.client_socket.send(msg.encode(FORMAT))
+                
+                server_respond = self.client_socket.recv(SIZE).decode(FORMAT)
+                server_command, server_message = server_respond.split('@')
+                if fname not in self.allFile:
+                    self.allFile.append(fname)
+                print(server_message)
+                return server_command, server_message
 
 
     def fetch(self, fname = ''):
@@ -272,6 +275,7 @@ class Client:
 
 
     def GetAllFile(self):
+        self.allFile = []
         self.client_socket.send('GETALL@Get'.encode(FORMAT))
         
         while True:
