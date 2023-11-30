@@ -172,7 +172,7 @@ class Client:
             return('ERROR', 'Please select a file to upload')
         else:
             if fname in os.listdir(os.path.join(os.getcwd(), REPOSITORY_PATH)):
-                return('ERROR', 'File name existed in your repository.')
+                return('ERROR', 'File name existed in repository.')
             else:
                 shutil.copy(filePath, os.path.join(os.getcwd(), REPOSITORY_PATH))
 
