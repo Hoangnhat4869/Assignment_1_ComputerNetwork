@@ -1,12 +1,7 @@
-import tkinter as tk
 import customtkinter as ctk
 from server import *
 import threading
 from PIL import Image
-import time
-from tkinter import filedialog
-import os
-import re
 from CTkListbox import *
 
 

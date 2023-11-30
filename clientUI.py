@@ -1,7 +1,5 @@
-import tkinter as tk
 import customtkinter as ctk
 from client import *
-import threading
 from PIL import Image
 import time
 from tkinter import filedialog
