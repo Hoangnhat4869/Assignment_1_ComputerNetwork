@@ -158,7 +158,7 @@ class Server:
 
     def ping(self, hostname = ''):
         if hostname not in self.connectedClient:
-            return 'This host have not connected to server yet.'
+            return 'This host has not connected to server yet.'
         else:
             if hostname in self.onlineClient:
                 output = 'ONLINE'
@@ -170,7 +170,7 @@ class Server:
         if hostname in self.connectedClient:
             return self.clientFileList[self.connectedClient[hostname]]
         else:
-            return hostname + " have not connected to server yet."
+            return hostname + " has not connected to server yet."
 
 def main():
     server = Server(SERVER_IP, SERVER_PORT)

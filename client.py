@@ -213,7 +213,7 @@ class Client:
                         self.allFile.append(fname)
                     return msg
                 else:
-                    msg = 'File not found on the server'
+                    msg = 'File is not found on the server'
                     print(msg)
                     return msg
             else:
