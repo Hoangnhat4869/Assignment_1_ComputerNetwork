@@ -40,6 +40,8 @@ class Server:
             client_name = client_socket.recv(SIZE).decode(FORMAT)
             print('\nClient ' + client_name + f' (IP Address: {client_address}) connected.')
             self.connectedClient[client_name] = client_address
+            if client_address not in self.clientFileList:
+                self.clientFileList[client_address] = []
             client_socket.send('_'.encode(FORMAT))
             self.onlineClient[client_name] = client_address
 

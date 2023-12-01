@@ -240,7 +240,7 @@ class ClientUI:
             MessageLabel = ctk.CTkLabel(self.RepoFrame, text=msg, text_color='green', font=self.tinyFont)
             self.client.deleteFile(self.RepoList.get())
             self.RepoList.delete(self.RepoList.curselection())
-            #self.client.allFile.remove(self.RepoList.curselection())
+            self.update_ServerFileList()
         
         MessageLabel.place(relx=0.5, rely=0.98, anchor=ctk.CENTER)
         MessageLabel.after(2000, lambda:MessageLabel.place_forget())
@@ -263,8 +263,12 @@ class ClientUI:
         MessageLabel.place(relx=0.5, rely=0.98, anchor=ctk.CENTER)
         MessageLabel.after(2000, lambda:MessageLabel.place_forget())
 
+        self.update_ServerFileList()
+
 
     def disconnect(self):
+        self.update_RepoList()
+        self.update_ServerFileList()
         self.client.disconnect(self.client.client_socket, self.client.server_IP, self.client.server_Port)
         self.client.isConnected = False
         self.client.client_server.close()
