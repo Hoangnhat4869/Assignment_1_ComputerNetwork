@@ -32,6 +32,9 @@ class ClientUI:
         self.bigFont = ctk.CTkFont('Lucida Sans Unicode', 25, 'bold')
         self.setup_app()
         self.start_login()
+        #self.display_main()
+        # listtest = ['192.168.1.1:1010:nhat:online', '192.168.1.2:1010:nhan:offline', '192.168.1.3:1010:dang:offline', '192.168.1.4:1010:tin:online']
+        #self.viewlistPeer()
 
 
     def setup_app(self):
@@ -40,7 +43,6 @@ class ClientUI:
         self.app.title('Client')
         self.app.geometry('800x500')
         self.create_object()
-        #self.display_main()
 
 
     def create_object(self):
@@ -110,6 +112,17 @@ class ClientUI:
         self.DisconnectButton = ctk.CTkButton(self.MainFrame, text='DISCONNECT', command=self.disconnect, 
                                             fg_color='#b30000', font=self.smallFont)
         
+        #########################################
+
+        # List peer
+        self.ListPeerFrame = ctk.CTkFrame(self.MainFrame, 550, 300, fg_color='#b3cccc', corner_radius=10)
+        # Objects
+        self.PeerList = CTkListbox(self.ListPeerFrame, fg_color='#333333', corner_radius=1, border_width=3, text_color='white',
+                                   hover_color='#75a3a3', font=self.smallFont, select_color='#527a7a')
+        self.ListPeerTitle = ctk.CTkLabel(self.ListPeerFrame, fg_color='#b3cccc', text='List Client', 
+                                            text_color='black', font=self.mediumFont)
+        self.GetFileButton = ctk.CTkButton(self.ListPeerFrame, text='CONNECT PEER', command=self.ConnectPeer, 
+                                            fg_color='#006622', font=self.smallFont)
 
     # UI
 
@@ -214,6 +227,7 @@ class ClientUI:
 
     def view_repo(self):
         self.ServerFileFrame.place_forget()
+        self.ListPeerFrame.place_forget()
         self.update_RepoList()
         self.RepoFrame.place(relwidth=0.7, relheight=0.76, relx=0.63, rely=0.58, anchor=ctk.CENTER)
         self.RepoTitle.place(relwidth=0.8, relheight=0.2, relx=0.5, rely=0.1, anchor=ctk.CENTER)
@@ -223,6 +237,7 @@ class ClientUI:
 
     def view_server(self):
         self.RepoFrame.place_forget()
+        self.ListPeerFrame.place_forget()
         self.DownFileButton.place_forget()
         self.update_ServerFileList()
         self.ServerFileFrame.place(relwidth=0.7, relheight=0.76, relx=0.63, rely=0.58, anchor=ctk.CENTER)
@@ -252,18 +267,65 @@ class ClientUI:
         if fName == None:
             msg = 'Please select a file to fetch!'
             MessageLabel = ctk.CTkLabel(self.ServerFileFrame, text=msg, text_color='red', font=self.tinyFont)
+            MessageLabel.place(relx=0.5, rely=0.98, anchor=ctk.CENTER)
+            MessageLabel.after(2000, lambda:MessageLabel.place_forget())
         else:
-            msg = self.client.fetch(self.ServerFileList.get())
-            if msg.startswith('Received'):
-                self.RepoList.insert('END', self.ServerFileList.get())
-                MessageLabel = ctk.CTkLabel(self.ServerFileFrame, text=msg, text_color='green', font=self.tinyFont)
-            else:
+            msg = self.client.fetch(fName)
+            if type(msg) == str:
                 MessageLabel = ctk.CTkLabel(self.ServerFileFrame, text=msg, text_color='red', font=self.tinyFont)
+                MessageLabel.place(relx=0.5, rely=0.98, anchor=ctk.CENTER)
+                MessageLabel.after(2000, lambda:MessageLabel.place_forget())
+            else:
+                self.targetFile = fName
+                self.update_peer_list(msg)
+                self.viewlistPeer()
+            # if msg.startswith('Received'):
+            #     self.RepoList.insert('END', self.ServerFileList.get())
+            #     MessageLabel = ctk.CTkLabel(self.ServerFileFrame, text=msg, text_color='green', font=self.tinyFont)
+            # else:
+            #     MessageLabel = ctk.CTkLabel(self.ServerFileFrame, text=msg, text_color='red', font=self.tinyFont)
                 
-        MessageLabel.place(relx=0.5, rely=0.98, anchor=ctk.CENTER)
-        MessageLabel.after(2000, lambda:MessageLabel.place_forget())
+        # MessageLabel.place(relx=0.5, rely=0.98, anchor=ctk.CENTER)
+        # MessageLabel.after(2000, lambda:MessageLabel.place_forget())
 
         self.update_ServerFileList()
+
+
+    def update_peer_list(self, list):
+        if self.PeerList.size():
+            self.PeerList.delete(0,'END')
+        for ele in list:
+            row = ele.split(':')[0] + '\t' + ele.split(':')[2] + '\t\t' + ele.split(':')[-1]
+            self.PeerList.insert('END', row)
+
+
+    def viewlistPeer(self):
+        self.RepoFrame.place_forget()
+        self.ServerFileFrame.place_forget()
+        self.MainFrame.place(relwidth=1, relheight=1, relx=0.5, rely=0.5, anchor=ctk.CENTER)
+        #self.update_peer_list(list)
+        self.ListPeerFrame.place(relwidth=0.7, relheight=0.76, relx=0.63, rely=0.58, anchor=ctk.CENTER)
+        self.ListPeerTitle.place(relwidth=0.8, relheight=0.2, relx=0.5, rely=0.1, anchor=ctk.CENTER)
+        self.PeerList.place(relwidth=0.8, relheight=0.6, relx=0.5, rely=0.5, anchor=ctk.CENTER)
+        self.GetFileButton.place(relwidth=0.25, relheight=0.08, relx=0.5, rely=0.9, anchor=ctk.CENTER)
+
+
+    def ConnectPeer(self):
+        target = self.PeerList.get()
+        targetIP = target.split('\t')[0]
+        targetStatus = target.split('\t')[-1]
+        if targetStatus == 'Offline':
+            msg = 'This client is offline!'
+            MessageLabel = ctk.CTkLabel(self.ListPeerFrame, text=msg, text_color='red', font=self.tinyFont)
+        else:
+            msg = self.client.getfile_from_target_peer(targetIP, 6969, self.targetFile)
+            if msg.startswith('FAIL@'):
+                MessageLabel = ctk.CTkLabel(self.ListPeerFrame, text=msg, text_color='red', font=self.tinyFont)
+            else:
+                MessageLabel = ctk.CTkLabel(self.ListPeerFrame, text=msg, text_color='green', font=self.tinyFont)
+
+        MessageLabel.place(relx=0.5, rely=0.98, anchor=ctk.CENTER)
+        MessageLabel.after(2000, lambda:MessageLabel.place_forget())
 
 
     def disconnect(self):

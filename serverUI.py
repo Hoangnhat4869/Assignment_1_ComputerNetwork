@@ -14,7 +14,7 @@ FORMAT = 'utf-8'
 
 class ServerUI:
     def __init__(self):
-        self.app = ctk.CTk()
+        self.app = ctk.CTk()  
         self.server = Server(SERVER_IP, SERVER_PORT)
         self.tinyFont = ctk.CTkFont('Lucida Sans Unicode', 12, 'bold')
         self.smallFont = ctk.CTkFont('Lucida Sans Unicode', 15, 'bold')
@@ -104,12 +104,15 @@ class ServerUI:
             for file in listFile:
                 self.RepoList.insert('END',file)
 
+            repoLabel.after(5000, lambda: repoLabel.place_forget())
+            self.RepoList.after(5000, lambda: self.RepoList.delete(0,'END'))
+
 
     def update_client_listbox(self):
         if self.ClientListBox.size():
             self.ClientListBox.delete(0,'END')
-        for hostname in self.server.connectedClient:
-            value = self.server.connectedClient[hostname][0] + '\t\t' + hostname
+        for hostname in self.server.connectedClientAdd:
+            value = self.server.connectedClientAdd[hostname][0] + '\t\t' + hostname
             self.ClientListBox.insert('END', value)
 
 

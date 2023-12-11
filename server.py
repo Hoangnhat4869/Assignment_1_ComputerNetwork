@@ -28,7 +28,8 @@ class Server:
         self.server.bind((ip, port))
         self.server.listen()
         self.onlineClient = dict()
-        self.connectedClient = dict()
+        self.connectedClientAdd = dict()
+        self.connectedClientName = dict()
         self.clientFileList = dict()
 
     def start(self):
@@ -39,9 +40,10 @@ class Server:
             client_socket, client_address = self.server.accept()
             client_name = client_socket.recv(SIZE).decode(FORMAT)
             print('\nClient ' + client_name + f' (IP Address: {client_address}) connected.')
-            self.connectedClient[client_name] = client_address
-            if client_address not in self.clientFileList:
-                self.clientFileList[client_address] = []
+            self.connectedClientAdd[client_name] = client_address
+            self.connectedClientName[client_address] = client_name
+            if client_name not in self.clientFileList:
+                self.clientFileList[client_name] = []
             client_socket.send('_'.encode(FORMAT))
             self.onlineClient[client_name] = client_address
 
@@ -80,12 +82,12 @@ class Server:
             if client_command == 'PUBLISHALL':
                 fileName = client_message.split(':')
                 fileName = fileName[:-1]
-                if client_address in self.clientFileList:
-                    self.clientFileList[client_address] = []
+                if client_name in self.clientFileList:
+                    self.clientFileList[client_name] = []
                     for file in fileName:
-                        self.clientFileList[client_address].append(file)
+                        self.clientFileList[client_name].append(file)
                 else:
-                    self.clientFileList[client_address] = fileName
+                    self.clientFileList[client_name] = fileName
                 
                 cmd = 'OK'
                 msg = 'Uploaded successfully!'
@@ -95,10 +97,10 @@ class Server:
 
             elif client_command == 'PUBLISH':
                 fileName = client_message
-                if client_address in self.clientFileList:
-                    self.clientFileList[client_address].append(fileName)
+                if client_name in self.clientFileList:
+                    self.clientFileList[client_name].append(fileName)
                 else:
-                    self.clientFileList[client_address] = [fileName]
+                    self.clientFileList[client_name] = [fileName]
                 
                 cmd = 'OK'
                 msg = 'Uploaded successfully!'
@@ -109,19 +111,24 @@ class Server:
             elif client_command == 'FETCH':
                 fileName = client_message
                 curClientList = list()
+                curClientList.clear()
                 for cli in self.clientFileList:
-                    if fileName in self.clientFileList[cli] and cli in self.onlineClient.values():
+                    if fileName in self.clientFileList[cli]:
                         curClientList.append(cli)
                 if curClientList:
                     self.send_message(client_socket, 'OK', 'These are clients having the file:')
                     for client in curClientList:
-                        client = client[0] + ':' + str(client[1])
-                        client_socket.send(client.encode(FORMAT))
+                        add = self.connectedClientAdd[client]
+                        status = 'Offline'
+                        if client in self.onlineClient:
+                            status = 'Online'
+                        res = add[0] + ':' + str(add[1]) + ':' + client + ':' + status
+                        client_socket.send(res.encode(FORMAT))
                         _ = client_socket.recv(SIZE).decode(FORMAT)
                     
                     self.send_message(client_socket, 'DONE', 'All clients are sent.')
-                    self.clientFileList[client_address].append(fileName)
-                    print(f'All clients are sent to [{client_address}]')
+                    self.clientFileList[client_name].append(fileName)
+                    print(f'All clients are sent to [{client_name}]')
                 else:
                     self.send_message(client_socket, 'ERROR', 'Filename does not exist on server.')
                     print('Filename does not exist.')
@@ -131,7 +138,7 @@ class Server:
 
             elif client_command == 'DELETE':
                 fileName = client_message
-                self.clientFileList[client_address].remove(fileName)
+                self.clientFileList[client_name].remove(fileName)
                 self.send_message(client_socket, 'OK', 'Deleted successfully!')
                 print('Deleted successfully!')
 
@@ -146,10 +153,10 @@ class Server:
                     client_socket.send(file.encode(FORMAT))
                     _ = client_socket.recv(SIZE).decode(FORMAT)
                 self.send_message(client_socket, 'DONE?', 'All files are sent.')
-                print(f'All files are sent to [{client_address}]')
+                print(f'All files are sent to [{client_name}]')
 
             else:
-                print(f'Client {client_address} disconnected.')
+                print(f'Client {client_name} disconnected.')
                 self.onlineClient.pop(client_name)
                 client_socket.close()
                 break
@@ -159,7 +166,7 @@ class Server:
         client_socket.send(respond.encode(FORMAT))
 
     def ping(self, hostname = ''):
-        if hostname not in self.connectedClient:
+        if hostname not in self.connectedClientAdd:
             return 'This host has not connected to server yet.'
         else:
             if hostname in self.onlineClient:
@@ -169,8 +176,8 @@ class Server:
             return output
 
     def discover(self, hostname = ''):
-        if hostname in self.connectedClient:
-            return self.clientFileList[self.connectedClient[hostname]]
+        if hostname in self.connectedClientAdd:
+            return self.clientFileList[hostname]
         else:
             return hostname + " has not connected to server yet."
 

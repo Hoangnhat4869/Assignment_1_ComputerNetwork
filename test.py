@@ -1,3 +1,1 @@
-str = 'truong:hoang:nhat:cute:'
-k = str.split(':')
-print(k)
+print(len('our scouts found enemy forces near la vaguelette river prepare assault units over'))

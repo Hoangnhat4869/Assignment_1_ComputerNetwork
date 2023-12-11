@@ -79,6 +79,7 @@ class Client:
             self.peer_socket.connect((target_IP, target_Port))
         except:
             print(f'Failed to connect to peer: {target_IP}:{target_Port}')
+            return('FAIL@Connection failed')
         print(f'Connected to peer: {target_IP}:{target_Port}')
 
         request = 'FETCH@' + fileName
@@ -101,6 +102,8 @@ class Client:
         self.targetIP = target_IP
         print(msg)
         self.peer_socket.close()
+        if fileName not in self.allFile:
+            self.allFile.append(fileName)
         return msg
 
 
@@ -123,6 +126,8 @@ class Client:
         elif option.startswith('fetch'):
             fname = option.split(' ')[1]
             self.fetch(fname)
+            targetIP = input('Enter IP to connect: ')
+            self.getfile_from_target_peer(targetIP, 6969, fname)
         elif option.startswith('delete'):
             fname = option.split(' ')[1]
             self.deleteFile(fname)
@@ -207,11 +212,10 @@ class Client:
                     self.client_socket.send('Received'.encode(FORMAT))
                 if (clientList):
                     print(server_message, clientList)
-                    target_IP = clientList[0].split(':')[0]
-                    msg = self.getfile_from_target_peer(target_IP, 6969, fname)
-                    if fname not in self.allFile:
-                        self.allFile.append(fname)
-                    return msg
+                    # target_IP = clientList[0].split(':')[0]
+                    # msg = self.getfile_from_target_peer(target_IP, 6969, fname)
+                    print(msg)
+                    return clientList
                 else:
                     msg = 'File is not found on the server'
                     print(msg)
