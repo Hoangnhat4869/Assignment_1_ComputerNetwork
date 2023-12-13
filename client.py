@@ -116,7 +116,7 @@ class Client:
     ##### Client choose option #####
     def choosing_option(self):
 
-        print('Enter your command:\n> publish `lname` `fname`: Add a file named `fname` from `lname` to repository and convey to the server\n> fetch `fname`: Find some copy of the file named `fname` and add it to repository\n> quit: Disconnect from server')
+        print('Enter your command:\n> publish `lname` `fname`: Add a file named `fname` from `lname` to repository and convey to the server\n> fetch `fname`: Find some copy of the file named `fname` and add it to repository\n> quit: Disconnect from server\n> delete fname: Delete fname from your repository')
         
         option = input('Your command: ')
         if option.startswith('publish'):
@@ -173,10 +173,11 @@ class Client:
         
         filePath = os.path.join(lname, fname)
         if not os.path.exists(filePath):
-            # print('This file does not exist on your system.')
+            print('This file does not exist on your system.')
             return('ERROR', 'Please select a file to upload')
         else:
             if fname in os.listdir(os.path.join(os.getcwd(), REPOSITORY_PATH)):
+                print('File name existed in your repository')
                 return('ERROR', 'File name existed in repository.')
             else:
                 shutil.copy(filePath, os.path.join(os.getcwd(), REPOSITORY_PATH))
@@ -231,12 +232,16 @@ class Client:
 
     def deleteFile(self, fname):
         filePath = os.path.join(REPOSITORY_PATH, fname)
-        os.remove(filePath)
-        msg = 'DELETE@' + fname
-        self.client_socket.send(msg.encode(FORMAT))
-        _, server_msg = self.client_socket.recv(SIZE).decode(FORMAT).split('@')
-        self.allFile.remove(fname)
-        print(server_msg)
+        if not os.path.exists(filePath):
+            print('File does not exist in repository.')
+            return('ERROR', 'File does not exist in repository.')
+        else:
+            os.remove(filePath)
+            msg = 'DELETE@' + fname
+            self.client_socket.send(msg.encode(FORMAT))
+            _, server_msg = self.client_socket.recv(SIZE).decode(FORMAT).split('@')
+            self.allFile.remove(fname)
+            print(server_msg)
 
 
     def listening(self):
