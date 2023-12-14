@@ -312,17 +312,21 @@ class ClientUI:
 
     def ConnectPeer(self):
         target = self.PeerList.get()
-        targetIP = target.split('\t')[0]
-        targetStatus = target.split('\t')[-1]
-        if targetStatus == 'Offline':
-            msg = 'This client is offline!'
+        if target == None:
+            msg = 'Please select a peer to connect!'
             MessageLabel = ctk.CTkLabel(self.ListPeerFrame, text=msg, text_color='red', font=self.tinyFont)
         else:
-            msg = self.client.getfile_from_target_peer(targetIP, 6969, self.targetFile)
-            if msg.startswith('FAIL@'):
+            targetIP = target.split('\t')[0]
+            targetStatus = target.split('\t')[-1]
+            if targetStatus == 'Offline':
+                msg = 'This client is offline!'
                 MessageLabel = ctk.CTkLabel(self.ListPeerFrame, text=msg, text_color='red', font=self.tinyFont)
             else:
-                MessageLabel = ctk.CTkLabel(self.ListPeerFrame, text=msg, text_color='green', font=self.tinyFont)
+                msg = self.client.getfile_from_target_peer(targetIP, 6969, self.targetFile)
+                if msg.startswith('FAIL@'):
+                    MessageLabel = ctk.CTkLabel(self.ListPeerFrame, text=msg, text_color='red', font=self.tinyFont)
+                else:
+                    MessageLabel = ctk.CTkLabel(self.ListPeerFrame, text=msg, text_color='green', font=self.tinyFont)
 
         MessageLabel.place(relx=0.5, rely=0.98, anchor=ctk.CENTER)
         MessageLabel.after(2000, lambda:MessageLabel.place_forget())
