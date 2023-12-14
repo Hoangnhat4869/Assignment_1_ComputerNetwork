@@ -1,6 +1,7 @@
 import socket as sk
 import threading
 import time
+import os
 
 def get_local_ip():
     s = sk.socket(sk.AF_INET, sk.SOCK_DGRAM)
@@ -165,13 +166,27 @@ class Server:
         respond = cmd + '@' + msg
         client_socket.send(respond.encode(FORMAT))
 
-    def ping(self, hostname = ''):
+    # def ping(self, hostname = ''):
+    #     if hostname not in self.connectedClientAdd:
+    #         return 'This host has not connected to server yet.'
+    #     else:
+    #         if hostname in self.onlineClient:
+    #             output = 'ONLINE'
+    #         else:
+    #             output = 'OFFLINE'
+    #         return output
+
+    def ping(self, hostname):
         if hostname not in self.connectedClientAdd:
             return 'This host has not connected to server yet.'
         else:
-            if hostname in self.onlineClient:
+            add = self.connectedClientAdd[hostname]
+            respond = os.system(f'ping -c 1 {add[0]}')
+            if respond == 0:
                 output = 'ONLINE'
             else:
+                if hostname in self.onlineClient:
+                    self.onlineClient.pop(hostname)
                 output = 'OFFLINE'
             return output
 
