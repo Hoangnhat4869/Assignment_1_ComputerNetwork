@@ -104,6 +104,7 @@ class Client:
         self.peer_socket.close()
         if fileName not in self.allFile:
             self.allFile.append(fileName)
+        self.publish_all()
         return msg
 
 

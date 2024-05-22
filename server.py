@@ -166,30 +166,35 @@ class Server:
         respond = cmd + '@' + msg
         client_socket.send(respond.encode(FORMAT))
 
-    # def ping(self, hostname = ''):
-    #     if hostname not in self.connectedClientAdd:
-    #         return 'This host has not connected to server yet.'
-    #     else:
-    #         if hostname in self.onlineClient:
-    #             output = 'ONLINE'
-    #         else:
-    #             output = 'OFFLINE'
-    #         return output
-
-    def ping(self, hostname):
+    def ping(self, hostname = ''):
         if hostname not in self.connectedClientAdd:
             return 'This host has not connected to server yet.'
         else:
-            add = self.connectedClientAdd[hostname]
-            soc = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-            respond = soc.connect_ex((add[0], 6969))
-            if respond == 0:
+            if hostname in self.onlineClient:
                 output = 'ONLINE'
             else:
-                if hostname in self.onlineClient:
-                    self.onlineClient.pop(hostname)
                 output = 'OFFLINE'
             return output
+
+    # def ping(self, hostname):
+    #     if hostname not in self.connectedClientAdd:
+    #         return 'This host has not connected to server yet.'
+    #     else:
+    #         add = self.connectedClientAdd[hostname]
+    #         soc = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+    #         try:
+    #             respond = soc.connect_ex((add[0], 6969))
+    #             if respond == 0:
+    #                 output = 'ONLINE'
+    #             else:
+    #                 if hostname in self.onlineClient:
+    #                     self.onlineClient.pop(hostname)
+    #                 output = 'OFFLINE'
+    #         except:
+    #             output = 'OFFLINE'
+    #         finally:
+    #             soc.close()
+    #         return output
 
     def discover(self, hostname = ''):
         if hostname in self.connectedClientAdd:
